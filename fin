@@ -1,0 +1,215 @@
+package sd;
+
+/**
+ * Created by admin on 2017/6/8.
+ */
+import java.applet.*;
+import java.applet.AudioClip;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Calendar;
+import javax.swing.*;
+/**
+ * Created by k70 on 2017-06-08.
+ */
+class dateee {
+
+
+    static boolean LeapYear(int year){ //判断闰年
+        if(year%400==0 || (year%4==0 && year%100!=0)){ //是闰年
+            return true;
+        }
+
+        else{
+            return false;
+        }
+    }
+    static final int N = 1900; //用N表示起始年份
+    public String[][] gets( String [][] s,int Year,int Month) {
+        int n = 1;//1900年1月1日 是星期一
+        int month[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}; //用来存储月份的天数
+        int year[] = new int[1001];  //用来存储每年1月1日是星期几
+        year[0] = n;
+        for (int i = 1; i < year.length; i++) {
+            int days = 365;
+            if (LeapYear(i + N - 1)) {//如果它的前一年是闰年则需要加366
+                days = 366;
+                year[i] = (year[i - 1] + days) % 7;
+            } else {
+                year[i] = (year[i - 1] + days) % 7;
+            }
+        }
+        /*
+        for(int i=0;i<10;i++){
+            System.out.println(year[i]);
+        }
+        */
+
+
+        //System.out.println(year[Year-1970]);
+        if (Month > 12 || Month < 1) {
+            System.out.println("输入月份不合法,请重新输入!");
+
+        }
+
+
+
+        if (LeapYear(Year)) { //如果是闰年,2月改为29号
+            month[2] = 29;
+        }
+        int day = 0; //用来记录当前月的一号是今年的第几天
+        for (int i = 1; i < Month; i++) {
+            day = day + month[i];
+        }
+        int ii=0;
+        int jj=0;
+
+        day = (year[Year - N] + day) % 7;
+        for (int i = 0; i < 7; i++) {//输出控制
+            if (day == i) {
+                s[0][i]="1";
+                ii=i+1;
+                if (day == 6) {
+                    jj=jj+1;
+                }
+                break;
+            } else {
+                s[0][i] =" ";
+
+            }
+        }
+
+        for (int i = 2; i <= month[Month]; i++) {
+            if (i < 10) {
+                s [jj][ii]= ""+i;
+                ii++;
+
+            } else {
+                s [jj][ii]= ""+i;
+                ii++;
+            }
+            if ((day + i - 1) % 7 == 6) {
+                ii=0;
+                jj++;
+            }
+        }
+        return s;
+    }
+}
+
+
+
+
+
+
+public class sy11 extends JFrame{
+
+    private dateee da=new dateee();
+    protected AudioClip[] hourAudio = new AudioClip[12];
+    protected AudioClip[] minuteAudio = new AudioClip[60];
+
+
+
+    // Create audio clips for pronouncing am and pm
+   //protected AudioClip amAudio =
+      //      Applet.newAudioClip(this.getClass().getResource("/audio/am.au"));
+   // protected AudioClip pmAudio =
+         //   Applet.newAudioClip(this.getClass().getResource("/audio/pm.au"));
+    private JLabel jlblDigitTime = new JLabel("", JLabel.CENTER);
+    private String[] st={"星期日","星期一","星期二","星期三","星期四","星期五","星期六"};
+    private JTable table;
+    private StillClock clock = new StillClock();
+
+    // Create a timer
+    private Timer timer = new Timer(100,new  sy11.TimerListener());
+    private static String s[][]=new String[6][7];
+    public sy11(){
+        setLayout(new BorderLayout());
+
+        /*for (int i = 0; i < 12; i++)
+            hourAudio[i] = Applet.newAudioClip(
+                    this.getClass().getResource("/audio/hour" + i + ".au"));
+
+        // Create audio clips for pronouncing minutes
+        for (int i = 0; i < 60; i++)
+            minuteAudio[i] = Applet.newAudioClip(
+                    this.getClass().getResource("/audio/minute" + i + ".au"));
+         */
+
+        JPanel p1=new JPanel(new BorderLayout());
+        p1.add(clock,BorderLayout.CENTER);
+        p1.add(jlblDigitTime, BorderLayout.SOUTH);
+        Calendar now = Calendar.getInstance();
+        timer.start();
+        s=da.gets(s,now.get(Calendar.YEAR),now.get(Calendar.MONTH)+1);
+        table=new JTable(s,st);
+        table.setRowHeight(28);
+
+        add(new JScrollPane(table),BorderLayout.WEST);
+        add(p1,BorderLayout.EAST);
+
+
+
+
+    }
+
+    private class TimerListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            clock.setCurrentTime();
+            clock.repaint();
+             jlblDigitTime.setText(clock.getHour() + ":" + clock.getMinute()
+                 + ":" + clock.getSecond());
+             if (clock.getSecond() == 0)
+              announceTime(clock.getHour(), clock.getMinute());
+        }
+    }
+    public void announceTime(int h, int m) {
+        new Thread(new AnnounceTimeOnSeparateThread(h, m)).start();
+    }
+
+    /** Inner class for announcing time */
+    class AnnounceTimeOnSeparateThread implements Runnable {
+        private int hour, minute;
+
+        /** Get Audio clips */
+        public AnnounceTimeOnSeparateThread(int hour, int minute) {
+            this.hour = hour;
+            this.minute = minute;
+        }
+
+        public void run() {
+            // Announce hour
+            hourAudio[hour % 12].play();
+
+            try {
+                // Time delay to allow hourAudio play to finish
+                Thread.sleep(1500);
+
+                // Announce minute
+                minuteAudio[minute].play();
+
+                // Time delay to allow minuteAudio play to finish
+                Thread.sleep(1500);
+            }
+            catch (InterruptedException ex) {
+            }
+
+            // Announce am or pm
+            //if (hour < 12)
+               // amAudio.play();
+            //else
+               // pmAudio.play();
+        }
+    }
+    public static void main(String[] args){
+        sy11 frame=new sy11();
+        frame.setTitle("clock");
+        frame.setLocationRelativeTo(null); // Center the frame
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(700,300);
+        frame.setVisible(true);
+    }
+
+
+}
