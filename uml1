@@ -1,0 +1,68 @@
+ class Operator {
+
+	private int firstNumber;
+
+	private int secondNumber;
+
+	public  int getResuilt() {
+	    return 0;
+    }
+	public void setFirstNumber(int FirstNumber){
+	    this.firstNumber=FirstNumber;
+    }
+
+    public void setSecondNumber(int SecondNumber) {
+        this.secondNumber = SecondNumber;
+    }
+
+    public int getFirstNumber() {
+        return firstNumber;
+    }
+
+    public int getSecondNumber() {
+        return secondNumber;
+    }
+}
+
+class sub extends Operator {
+
+	public int getResuilt() {
+		return this.getFirstNumber() - this.getSecondNumber();
+	}
+
+}
+class add extends Operator {
+
+	public int getResuilt() {
+
+		return (this.getFirstNumber() + this.getSecondNumber());
+	}
+
+}
+class OperationFactory {
+
+	public static Operator createOperation(String oper) {
+		if(oper=="-")
+			return new sub();
+		else if(oper=="+")
+			return new add();
+		else
+			return null;
+	}
+
+}
+public class Clint {
+
+	public static void main(String[] args) {
+		int firstNumber=15;
+		int secondNumber=9;
+		String oper;
+		Scanner inn=new Scanner(System.in);
+		oper="+";
+		Operator operator=OperationFactory.createOperation(oper);
+		operator.setFirstNumber(firstNumber);
+		operator.setSecondNumber(secondNumber);
+		System.out.print(operator.getResuilt());
+	}
+
+}
